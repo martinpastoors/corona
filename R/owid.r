@@ -12,9 +12,7 @@ owid <-
   read.csv("C:/TEMP/owid-covid-data.csv") %>% 
   mutate(date = lubridate::ymd(date))
 
-# OxCGRT <- 
-#   read.csv("https://github.com/OxCGRT/covid-policy-tracker/blob/master/data/OxCGRT_withnotes_2021.csv")
-
+# owid %>% group_by(iso_code) %>% filter(iso_code == "NLD", date == max(date)) %>% dplyr::select(iso_code, date) %>% View()
 
 
 # patchwork plot with cases, people vaccinated and stringency index
@@ -28,7 +26,6 @@ t <-
                stringency_index:people_fully_vaccinated_per_hundred) %>% 
   filter(value >= 0, (new_cases_per_million > 0 | new_cases_smoothed_per_million > 0)) 
 
-t %>% group_by(iso_code) %>% filter(iso_code == "NLD", date == max(date)) %>% dplyr::select(iso_code, date) %>% View()
 
 p1 <-
   t %>% 
@@ -59,8 +56,13 @@ p2 <-
   theme(legend.position = "bottom") +
   theme(strip.background = element_blank(), strip.text = element_blank()) + 
   geom_line(aes(y =value, colour=variable)) +
-  ggrepel::geom_label_repel(data=t %>% group_by(iso_code, variable) %>% filter(date==max(date, na.rm=TRUE)), 
-                            aes(y=value, label=round(value), colour=variable)) +
+  # ggrepel::geom_label_repel(data=t %>% group_by(iso_code, variable) %>% filter(date==max(date, na.rm=TRUE)), 
+  #                           aes(y=value, label=round(value), colour=variable)) +
+  ggrepel::geom_label_repel(data=t %>% group_by(iso_code, variable) %>% filter(date==max(date, na.rm=TRUE)),
+                            aes(y=value, label=round(value), colour=variable),
+                            nudge_y = 25,
+                            segment.size = 0.2,
+                            segment.linetype = "dashed") +
   expand_limits(y=0) +
   labs(x="", y="index") +
   facet_wrap(~iso_code, nrow=1)
